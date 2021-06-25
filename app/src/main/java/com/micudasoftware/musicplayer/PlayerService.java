@@ -1,3 +1,4 @@
+
 package com.micudasoftware.musicplayer;
 
 import android.app.NotificationChannel;
@@ -52,7 +53,8 @@ public class PlayerService extends MediaBrowserServiceCompat {
         mediaSession = new MediaSessionCompat(this, "tag");
         mediaSession.setFlags(
                 MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS |
-                        MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS);
+                        MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS |
+                        MediaSessionCompat.FLAG_HANDLES_QUEUE_COMMANDS);
 
         stateBuilder = new PlaybackStateCompat.Builder()
                 .setActions(PlaybackStateCompat.ACTION_PLAY_PAUSE |
@@ -176,13 +178,7 @@ public class PlayerService extends MediaBrowserServiceCompat {
                 registerReceiver(myNoisyAudioStreamReceiver,
                         new IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY));
 
-//                for (itemCount = 0; itemCount < mediaItems.size(); itemCount++) {
-//                    MediaBrowserCompat.MediaItem item = mediaItems.get(itemCount);
-//                    if (item.getDescription().getMediaUri().equals(uri)) {
-//                        mediaItem = item;
-//                        break;
-//                    }
-//                }
+                queuePosition = extras.getInt("position");
 
                 player.reset();
                 try {
@@ -217,6 +213,11 @@ public class PlayerService extends MediaBrowserServiceCompat {
         @Override
         public void onAddQueueItem(MediaDescriptionCompat description) {
             queue.add(description);
+        }
+
+        @Override
+        public void onRemoveQueueItem(MediaDescriptionCompat description) {
+            queue = new ArrayList<>();
         }
 
         @RequiresApi(api = Build.VERSION_CODES.O)
@@ -271,18 +272,23 @@ public class PlayerService extends MediaBrowserServiceCompat {
 
         @Override
         public void onSkipToPrevious() {
-            if (queuePosition > 0)
+            if (queuePosition > 0) {
+                Bundle extras = new Bundle();
+                extras.putInt("position", queuePosition - 1);
                 mediaSession.getController().getTransportControls().playFromUri(
-                        queue.get(queuePosition - 1).getMediaUri(),
-                        null);
+                        queue.get(queuePosition - 1).getMediaUri(), extras);
+            }
         }
 
         @Override
         public void onSkipToNext() {
-            if (queuePosition < queue.size() - 1)
+            if (queuePosition < queue.size() - 1) {
+                Bundle extras = new Bundle();
+                extras.putInt("position", queuePosition + 1);
                 mediaSession.getController().getTransportControls().playFromUri(
                         queue.get(queuePosition + 1).getMediaUri(),
-                        null);
+                        extras);
+            }
         }
 
         @Override
@@ -297,7 +303,7 @@ public class PlayerService extends MediaBrowserServiceCompat {
 
         private void buildNotification() {
             MediaControllerCompat controller = mediaSession.getController();
-            MediaDescriptionCompat description = mediaItem.getDescription();
+            MediaDescriptionCompat description = queue.get(queuePosition);
 
             int icon;
             String title;

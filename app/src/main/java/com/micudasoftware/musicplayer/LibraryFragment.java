@@ -5,6 +5,7 @@ import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.media.MediaBrowserCompat;
+import android.support.v4.media.MediaDescriptionCompat;
 import android.support.v4.media.session.MediaControllerCompat;
 import android.util.Log;
 import android.util.TypedValue;
@@ -152,8 +153,14 @@ public class LibraryFragment extends Fragment implements CustomAdapter.ItemClick
                     .commit();
             BottomNavigationBehavior.setToDefault();
         } else if (mediaItem.isPlayable()) {
+            controller.removeQueueItem(null);
+            for (MediaBrowserCompat.MediaItem item : mediaItems)
+                controller.addQueueItem(item.getDescription());
+
+            Bundle extras = new Bundle();
+            extras.putInt("position", position);
             controller.getTransportControls().
-                    playFromUri(mediaItem.getDescription().getMediaUri(), null);
+                    playFromUri(mediaItem.getDescription().getMediaUri(), extras);
         }
     }
 
