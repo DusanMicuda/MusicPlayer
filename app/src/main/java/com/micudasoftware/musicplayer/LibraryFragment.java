@@ -245,10 +245,16 @@ public class LibraryFragment extends Fragment implements CustomAdapter.ItemClick
 
                 ImageButton playAll = getView().findViewById(R.id.play_all);
                 playAll.setOnClickListener(v -> {
-                    if (mediaItems.get(0).isPlayable())
+                    if (mediaItems.get(0).isPlayable()) {
+                        controller.removeQueueItem(null);
+                        for (MediaBrowserCompat.MediaItem item : mediaItems)
+                            controller.addQueueItem(item.getDescription());
+
+                        Bundle extras = new Bundle();
+                        extras.putInt("position", 0);
                         controller.getTransportControls().
-                            playFromUri(mediaItems.get(0).getDescription().getMediaUri(), null);
-                    else {
+                                playFromUri(mediaItems.get(0).getDescription().getMediaUri(), extras);
+                } else {
 
                     }
                 });
