@@ -120,6 +120,14 @@ public class MusicDatabase extends SQLiteOpenHelper {
                         COLUMN_GENRE_ID + " INTEGER," +
                         COLUMN_DURATION + " INTEGER)");
 
+                db.execSQL("DROP TABLE IF EXISTS directories");
+                db.execSQL("CREATE TABLE directories (" + COLUMN_ID + " INTEGER PRIMARY KEY," +
+                                                    COLUMN_TITLE + " TEXT)");
+                ContentValues contentValues = new ContentValues();
+                contentValues.put(COLUMN_ID, 0);
+                contentValues.put(COLUMN_TITLE, directory.getLastPathSegment().split(":")[1]);
+                db.insert("directories", null, contentValues);
+
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                     getSystemService(NotificationManager.class).createNotificationChannel(
                             new NotificationChannel("2",

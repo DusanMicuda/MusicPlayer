@@ -326,4 +326,15 @@ public class MusicProvider {
 
         return null;
     }
+
+    public String getDirectory() {
+        Cursor cursor = database.rawQuery("SELECT " + MusicDatabase.COLUMN_TITLE +
+                                                " FROM directories", null);
+        String directory = null;
+        if (cursor.moveToFirst())
+            directory = cursor.getString(cursor.getColumnIndexOrThrow(MusicDatabase.COLUMN_TITLE));
+        cursor.close();
+
+        return directory;
+    }
 }

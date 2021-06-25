@@ -111,7 +111,7 @@ public class PlayerService extends MediaBrowserServiceCompat {
                 mediaItems = musicProvider.getGenres(null, null);
                 break;
             case MusicProvider.CONTENT_TYPE_FOLDERS:
-                mediaItems = musicProvider.getFolders(MusicDatabase.COLUMN_PATH, new String[] {"Hudba"});
+                mediaItems = musicProvider.getFolders(MusicDatabase.COLUMN_PATH, new String[] {musicProvider.getDirectory()});
                 break;
             default:
                 switch (parent) {
