@@ -254,7 +254,7 @@ public class PlayerService extends MediaBrowserServiceCompat {
         public void onRewind() {
             player.seekTo(player.getCurrentPosition() - 10000);
             stateBuilder.setState(
-                    PlaybackStateCompat.STATE_PLAYING,
+                    mediaSession.getController().getPlaybackState().getState(),
                     player.getCurrentPosition(),
                     1f);
             mediaSession.setPlaybackState(stateBuilder.build());
@@ -264,7 +264,7 @@ public class PlayerService extends MediaBrowserServiceCompat {
         public void onFastForward() {
             player.seekTo(player.getCurrentPosition() + 10000);
             stateBuilder.setState(
-                    PlaybackStateCompat.STATE_PLAYING,
+                    mediaSession.getController().getPlaybackState().getState(),
                     player.getCurrentPosition(),
                     1f);
             mediaSession.setPlaybackState(stateBuilder.build());
@@ -295,7 +295,7 @@ public class PlayerService extends MediaBrowserServiceCompat {
         public void onSeekTo(long pos) {
             player.seekTo((int) pos);
             stateBuilder.setState(
-                    PlaybackStateCompat.STATE_PLAYING,
+                    mediaSession.getController().getPlaybackState().getState(),
                     player.getCurrentPosition(),
                     1f);
             mediaSession.setPlaybackState(stateBuilder.build());
