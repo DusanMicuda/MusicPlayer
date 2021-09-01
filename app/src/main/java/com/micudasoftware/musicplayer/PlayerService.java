@@ -32,6 +32,7 @@ import androidx.media.session.MediaButtonReceiver;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 
 public class PlayerService extends MediaBrowserServiceCompat {
@@ -144,6 +145,8 @@ public class PlayerService extends MediaBrowserServiceCompat {
         private final MediaPlayer player = new MediaPlayer();
         private ArrayList<MediaDescriptionCompat> queue = new ArrayList<>();
         private int queuePosition;
+        private int shuffleMode = 0;
+        private ArrayList<Integer> shuffleList = new ArrayList<>();
 
         @Override
         public void onPlay() {
@@ -178,6 +181,8 @@ public class PlayerService extends MediaBrowserServiceCompat {
                         new IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY));
 
                 queuePosition = extras.getInt("position");
+                if (queuePosition < 0)
+                    queuePosition = new Random().nextInt(queue.size());
 
                 player.reset();
                 try {
@@ -187,12 +192,35 @@ public class PlayerService extends MediaBrowserServiceCompat {
                     player.prepare();
                     player.start();
                     player.setOnCompletionListener(mp -> {
-                        if (queuePosition < queue.size() - 1)
-                            mediaSession.getController().getTransportControls().playFromUri(
-                                    queue.get(queuePosition + 1).getMediaUri(),
-                                    null);
-                        else
-                            onStop();
+                        if (shuffleMode == PlaybackStateCompat.SHUFFLE_MODE_NONE) {
+                            if (queuePosition < queue.size() - 1)
+                                mediaSession.getController().getTransportControls().playFromUri(
+                                        queue.get(queuePosition + 1).getMediaUri(),
+                                        null);
+                            else
+                                onStop();
+                        } else if (shuffleMode == PlaybackStateCompat.SHUFFLE_MODE_ALL) {
+                            shuffleList.add(queuePosition);
+                            if (shuffleList.size() < queue.size()) {
+                                boolean notPlayed;
+                                int rand;
+                                do {
+                                    notPlayed = false;
+                                    rand = new Random().nextInt(queue.size());
+                                    for (int played : shuffleList) {
+                                        if (played == rand) {
+                                            notPlayed = true;
+                                            break;
+                                        }
+                                    }
+                                    Log.v("debug", rand + "");
+                                } while (notPlayed);
+                                Bundle bundle = new Bundle();
+                                bundle.putInt("position", rand);
+                                mediaSession.getController().getTransportControls().sendCustomAction("PlayFromQueue", bundle);
+                            } else
+                                onStop();
+                        }
                     });
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -295,6 +323,12 @@ public class PlayerService extends MediaBrowserServiceCompat {
                     player.getCurrentPosition(),
                     1f);
             mediaSession.setPlaybackState(stateBuilder.build());
+        }
+
+        @Override
+        public void onSetShuffleMode(int shuffleMode) {
+            shuffleList = new ArrayList<>();
+            this.shuffleMode = shuffleMode;
         }
 
         private void buildNotification() {

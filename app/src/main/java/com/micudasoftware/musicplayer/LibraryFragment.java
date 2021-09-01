@@ -9,6 +9,7 @@ import android.os.Looper;
 import android.support.v4.media.MediaBrowserCompat;
 import android.support.v4.media.MediaDescriptionCompat;
 import android.support.v4.media.session.MediaControllerCompat;
+import android.support.v4.media.session.PlaybackStateCompat;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
@@ -249,37 +250,13 @@ public class LibraryFragment extends Fragment implements CustomAdapter.ItemClick
 
                 ImageButton playAll = getView().findViewById(R.id.play_all);
                 playAll.setOnClickListener(v -> {
-                    if (mediaItems.get(0).isPlayable()) {
-                        controller.removeQueueItem(null);
-                        for (MediaBrowserCompat.MediaItem item : mediaItems)
-                            controller.addQueueItem(item.getDescription());
-
-                        Bundle extras = new Bundle();
-                        extras.putInt("position", 0);
-                        controller.getTransportControls().
-                                sendCustomAction("PlayFromQueue", extras);
-                    } else {
-                        controller.removeQueueItem(null);
-
-                        MediaBrowserCompat.SubscriptionCallback subscriptionCallback = new MediaBrowserCompat.SubscriptionCallback() {
-                            @Override
-                            public void onChildrenLoaded(@NonNull String parentId, @NonNull List<MediaBrowserCompat.MediaItem> children) {
-                                for (MediaBrowserCompat.MediaItem item : children)
-                                    controller.addQueueItem(item.getDescription());
-
-                                Bundle extras = new Bundle();
-                                extras.putInt("position", 0);
-                                controller.getTransportControls().sendCustomAction("PlayFromQueue", extras);
-                            }
-                        };
-                        for (MediaBrowserCompat.MediaItem mediaItem : mediaItems)
-                            MainActivity.mediaBrowser.subscribe(mediaItem.getMediaId(), subscriptionCallback);
-                    }
+                    playQueue();
                 });
 
                 ImageButton playRandom = getView().findViewById(R.id.play_random);
                 playRandom.setOnClickListener(v -> {
-
+                    controller.getTransportControls().setShuffleMode(PlaybackStateCompat.SHUFFLE_MODE_ALL);
+                    playQueue();
                 });
             } else {
                 backgroundLayout = (ConstraintLayout) getLayoutInflater()
@@ -311,6 +288,35 @@ public class LibraryFragment extends Fragment implements CustomAdapter.ItemClick
 
             AppBarLayout appBarLayout = getView().findViewById(R.id.appBar);
             appBarLayout.requestApplyInsets();
+        }
+
+        private void playQueue() {
+            if (mediaItems.get(0).isPlayable()) {
+                controller.removeQueueItem(null);
+                for (MediaBrowserCompat.MediaItem item : mediaItems)
+                    controller.addQueueItem(item.getDescription());
+
+                Bundle extras = new Bundle();
+                extras.putInt("position", 0);
+                controller.getTransportControls().
+                        sendCustomAction("PlayFromQueue", extras);
+            } else {
+                controller.removeQueueItem(null);
+
+                MediaBrowserCompat.SubscriptionCallback subscriptionCallback = new MediaBrowserCompat.SubscriptionCallback() {
+                    @Override
+                    public void onChildrenLoaded(@NonNull String parentId, @NonNull List<MediaBrowserCompat.MediaItem> children) {
+                        for (MediaBrowserCompat.MediaItem item : children)
+                            controller.addQueueItem(item.getDescription());
+
+                        Bundle extras = new Bundle();
+                        extras.putInt("position", 0);
+                        controller.getTransportControls().sendCustomAction("PlayFromQueue", extras);
+                    }
+                };
+                for (MediaBrowserCompat.MediaItem mediaItem : mediaItems)
+                    MainActivity.mediaBrowser.subscribe(mediaItem.getMediaId(), subscriptionCallback);
+            }
         }
     }
 }
