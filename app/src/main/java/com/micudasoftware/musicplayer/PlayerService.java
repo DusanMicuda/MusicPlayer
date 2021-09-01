@@ -158,9 +158,8 @@ public class PlayerService extends MediaBrowserServiceCompat {
             buildNotification();
         }
 
-        @RequiresApi(api = Build.VERSION_CODES.O)
         @Override
-        public void onPlayFromUri(Uri uri, Bundle extras) {
+        public void onCustomAction(String action, Bundle extras) {
             AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
             AudioAttributes attrs = new AudioAttributes.Builder()
                     .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
@@ -183,7 +182,7 @@ public class PlayerService extends MediaBrowserServiceCompat {
                 player.reset();
                 try {
                     ParcelFileDescriptor fileDescriptor = getApplicationContext().getContentResolver()
-                            .openFileDescriptor(uri, "r");
+                            .openFileDescriptor(queue.get(queuePosition).getMediaUri(), "r");
                     player.setDataSource(fileDescriptor.getFileDescriptor());
                     player.prepare();
                     player.start();
@@ -275,8 +274,7 @@ public class PlayerService extends MediaBrowserServiceCompat {
             if (queuePosition > 0) {
                 Bundle extras = new Bundle();
                 extras.putInt("position", queuePosition - 1);
-                mediaSession.getController().getTransportControls().playFromUri(
-                        queue.get(queuePosition - 1).getMediaUri(), extras);
+                mediaSession.getController().getTransportControls().sendCustomAction("PlayFromQueue", extras);
             }
         }
 
@@ -285,9 +283,7 @@ public class PlayerService extends MediaBrowserServiceCompat {
             if (queuePosition < queue.size() - 1) {
                 Bundle extras = new Bundle();
                 extras.putInt("position", queuePosition + 1);
-                mediaSession.getController().getTransportControls().playFromUri(
-                        queue.get(queuePosition + 1).getMediaUri(),
-                        extras);
+                mediaSession.getController().getTransportControls().sendCustomAction("PlayFromQueue", extras);
             }
         }
 

@@ -4,6 +4,8 @@ import android.graphics.Bitmap;
 import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.v4.media.MediaBrowserCompat;
 import android.support.v4.media.MediaDescriptionCompat;
 import android.support.v4.media.session.MediaControllerCompat;
@@ -15,6 +17,8 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
@@ -160,7 +164,7 @@ public class LibraryFragment extends Fragment implements CustomAdapter.ItemClick
             Bundle extras = new Bundle();
             extras.putInt("position", position);
             controller.getTransportControls().
-                    playFromUri(mediaItem.getDescription().getMediaUri(), extras);
+                    sendCustomAction("PlayFromQueue", extras);
         }
     }
 
@@ -253,9 +257,23 @@ public class LibraryFragment extends Fragment implements CustomAdapter.ItemClick
                         Bundle extras = new Bundle();
                         extras.putInt("position", 0);
                         controller.getTransportControls().
-                                playFromUri(mediaItems.get(0).getDescription().getMediaUri(), extras);
-                } else {
+                                sendCustomAction("PlayFromQueue", extras);
+                    } else {
+                        controller.removeQueueItem(null);
 
+                        MediaBrowserCompat.SubscriptionCallback subscriptionCallback = new MediaBrowserCompat.SubscriptionCallback() {
+                            @Override
+                            public void onChildrenLoaded(@NonNull String parentId, @NonNull List<MediaBrowserCompat.MediaItem> children) {
+                                for (MediaBrowserCompat.MediaItem item : children)
+                                    controller.addQueueItem(item.getDescription());
+
+                                Bundle extras = new Bundle();
+                                extras.putInt("position", 0);
+                                controller.getTransportControls().sendCustomAction("PlayFromQueue", extras);
+                            }
+                        };
+                        for (MediaBrowserCompat.MediaItem mediaItem : mediaItems)
+                            MainActivity.mediaBrowser.subscribe(mediaItem.getMediaId(), subscriptionCallback);
                     }
                 });
 
