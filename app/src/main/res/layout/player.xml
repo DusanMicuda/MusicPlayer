@@ -71,36 +71,73 @@
         app:layout_constraintTop_toBottomOf="@id/seekBar" />
 
     <ImageButton
+        android:id="@+id/skipBack"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="86dp"
+        android:padding="10dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/back"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/currentPosition"
+        app:srcCompat="@android:drawable/ic_media_previous"
+        android:background="@drawable/button_background"/>
+
+    <ImageButton
         android:id="@+id/back"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
+        android:layout_marginBottom="86dp"
+        android:padding="15dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/play"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintStart_toEndOf="@id/skipBack"
         app:layout_constraintTop_toBottomOf="@+id/currentPosition"
-        app:srcCompat="@android:drawable/ic_media_rew" />
+        app:srcCompat="@android:drawable/ic_media_rew"
+        android:background="@drawable/button_background"/>
 
     <ImageButton
         android:id="@+id/play"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
+        android:layout_marginBottom="86dp"
+        android:padding="25dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/forward"
         app:layout_constraintStart_toEndOf="@+id/back"
         app:layout_constraintTop_toBottomOf="@+id/currentPosition"
-        app:srcCompat="@android:drawable/ic_media_play" />
+        app:srcCompat="@android:drawable/ic_media_play"
+        android:background="@drawable/button_background"/>
 
     <ImageButton
         android:id="@+id/forward"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
+        android:layout_marginBottom="86dp"
+        android:padding="15dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/skipForward"
         app:layout_constraintStart_toEndOf="@+id/play"
         app:layout_constraintTop_toBottomOf="@+id/currentPosition"
-        app:srcCompat="@android:drawable/ic_media_ff" />
+        app:srcCompat="@android:drawable/ic_media_ff"
+        android:background="@drawable/button_background"/>
+
+    <ImageButton
+        android:id="@+id/skipForward"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="86dp"
+        android:padding="10dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/forward"
+        app:layout_constraintTop_toBottomOf="@+id/currentPosition"
+        app:srcCompat="@android:drawable/ic_media_next"
+        android:background="@drawable/button_background"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
