@@ -147,6 +147,7 @@ public class PlayerService extends MediaBrowserServiceCompat {
         private int queuePosition;
         private int shuffleMode = 0;
         private ArrayList<Integer> shuffleList = new ArrayList<>();
+        private MediaDescriptionCompat description;
 
         @Override
         public void onPlay() {
@@ -225,8 +226,14 @@ public class PlayerService extends MediaBrowserServiceCompat {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+
+                description = queue.get(queuePosition);
                 mediaSession.setMetadata(new MediaMetadataCompat.Builder()
-                        .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, player.getDuration()).build());
+                        .putString(MediaMetadataCompat.METADATA_KEY_TITLE, description.getTitle().toString())
+                        .putString(MediaMetadataCompat.METADATA_KEY_ALBUM_ARTIST, description.getSubtitle().toString())
+                        .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, player.getDuration())
+                        .putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, musicProvider.getImage(description.getIconUri()))
+                        .build());
 
                 stateBuilder.setState(
                         PlaybackStateCompat.STATE_PLAYING,
@@ -334,7 +341,6 @@ public class PlayerService extends MediaBrowserServiceCompat {
 
         private void buildNotification() {
             MediaControllerCompat controller = mediaSession.getController();
-            MediaDescriptionCompat description = queue.get(queuePosition);
 
             int icon;
             String title;
