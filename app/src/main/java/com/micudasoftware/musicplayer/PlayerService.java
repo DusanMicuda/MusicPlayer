@@ -253,7 +253,7 @@ public class PlayerService extends MediaBrowserServiceCompat {
             AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
             am.abandonAudioFocusRequest(audioFocusRequest);
 //            unregisterReceiver(myNoisyAudioStreamReceiver);
-            stopSelf();
+//            stopSelf();
             mediaSession.setActive(false);
             player.stop();
             stateBuilder.setState(
@@ -261,7 +261,8 @@ public class PlayerService extends MediaBrowserServiceCompat {
                     player.getCurrentPosition(),
                     1f);
             mediaSession.setPlaybackState(stateBuilder.build());
-            stopForeground(false);
+            buildNotification();
+//            stopForeground(false);
         }
 
         @Override

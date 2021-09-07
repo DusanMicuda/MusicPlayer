@@ -38,7 +38,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:divider="@null"
-        android:paddingBottom="112dp"
+        android:paddingBottom="56dp"
         android:clipToPadding="false"
         app:layout_behavior=".BottomNavigationBehavior" />
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
