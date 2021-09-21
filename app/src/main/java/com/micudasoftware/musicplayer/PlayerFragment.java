@@ -176,8 +176,10 @@ public class PlayerFragment extends Fragment {
         duration.setText(getDuration(mediaController.getMetadata().getLong(MediaMetadataCompat.METADATA_KEY_DURATION)));
         TextView songName = getView().findViewById(R.id.songName);
         songName.setText(mediaController.getMetadata().getString(MediaMetadataCompat.METADATA_KEY_TITLE));
+        songName.setSelected(true);
         TextView artistAlbum = getView().findViewById(R.id.artistAlbum);
         artistAlbum.setText(mediaController.getMetadata().getString(MediaMetadataCompat.METADATA_KEY_ALBUM_ARTIST));
+        artistAlbum.setSelected(true);
 
         ImageView imageView = getView().findViewById(R.id.imageView);
         imageView.setImageBitmap(mediaController.getMetadata().getBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART));
