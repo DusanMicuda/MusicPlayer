@@ -36,8 +36,6 @@ import java.io.IOException;
 public class PlayerFragment extends Fragment {
 
     Context context;
-    MediaPlayer mediaPlayer = new MediaPlayer();
-    File file;
     Handler handler = new Handler();
     private MediaBrowserCompat mediaBrowser;
     MediaControllerCompat mediaController;
@@ -62,57 +60,7 @@ public class PlayerFragment extends Fragment {
         mediaBrowser.connect();
         getActivity().setVolumeControlStream(AudioManager.STREAM_MUSIC);
 
-
-
-        ImageButton button = getView().findViewById(R.id.play);
-        button.setOnClickListener(v -> play());
-        button = getView().findViewById(R.id.skipBack);
-        button.setOnClickListener(v -> mediaController.getTransportControls().skipToPrevious());
-        button = getView().findViewById(R.id.back);
-        button.setOnClickListener(v -> mediaController.getTransportControls().rewind());
-        button = getView().findViewById(R.id.forward);
-        button.setOnClickListener(v -> mediaController.getTransportControls().fastForward());
-        button = getView().findViewById(R.id.skipForward);
-        button.setOnClickListener(v -> mediaController.getTransportControls().skipToNext());
-
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-        handler.removeCallbacksAndMessages(null);
-    }
-
-    public void play() {
-        ImageButton button = getView().findViewById(R.id.play);
-        if (mediaController.getPlaybackState().getState() == PlaybackStateCompat.STATE_PLAYING) {
-            mediaController.getTransportControls().pause();
-            button.setImageResource(android.R.drawable.ic_media_pause);
-        }
-        else {
-            mediaController.getTransportControls().play();
-            button.setImageResource(android.R.drawable.ic_media_play);
-        }
-        update();
-    }
-
-    private void update() {
-        TextView currentPosition = getView().findViewById(R.id.currentPosition);
-        currentPosition.setText(getDuration((int) mediaController.getPlaybackState().getCurrentPosition(null)));
-        TextView duration = getView().findViewById(R.id.duration);
-        duration.setText(getDuration(mediaController.getMetadata().getLong(MediaMetadataCompat.METADATA_KEY_DURATION)));
-        TextView songName = getView().findViewById(R.id.songName);
-        songName.setText(mediaController.getMetadata().getString(MediaMetadataCompat.METADATA_KEY_TITLE));
-        TextView artistAlbum = getView().findViewById(R.id.artistAlbum);
-        artistAlbum.setText(mediaController.getMetadata().getString(MediaMetadataCompat.METADATA_KEY_ALBUM_ARTIST));
-
-        ImageView imageView = getView().findViewById(R.id.imageView);
-        imageView.setImageBitmap(mediaController.getMetadata().getBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART));
-
         SeekBar seekBar = getView().findViewById(R.id.seekBar);
-        seekBar.setIndeterminate(false);
-        seekBar.setMax((int) mediaController.getMetadata().getLong(MediaMetadataCompat.METADATA_KEY_DURATION));
-        seekBar.setProgress((int) mediaController.getPlaybackState().getCurrentPosition(null));
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -129,14 +77,27 @@ public class PlayerFragment extends Fragment {
             public void onStopTrackingTouch(SeekBar seekBar) {}
         });
 
-        ImageButton imageButton = getView().findViewById(R.id.play);
-        if (mediaController.getPlaybackState().getState() == PlaybackStateCompat.STATE_PLAYING)
-            imageButton.setImageResource(android.R.drawable.ic_media_pause);
-        else
-            imageButton.setImageResource(android.R.drawable.ic_media_play);
+        buildTransportControls();
+    }
 
-        Runnable runnable = () -> update();
-        handler.postDelayed(runnable, 10);
+    @Override
+    public void onPause() {
+        super.onPause();
+        mediaBrowser.disconnect();
+        handler.removeCallbacksAndMessages(null);
+    }
+
+    private void update() {
+        TextView currentPosition = getView().findViewById(R.id.currentPosition);
+        currentPosition.setText(getDuration((int) mediaController.getPlaybackState().getCurrentPosition(null)));
+
+        SeekBar seekBar = getView().findViewById(R.id.seekBar);
+        seekBar.setProgress((int) mediaController.getPlaybackState().getCurrentPosition(null));
+
+        if (mediaController.getPlaybackState().getState() == PlaybackStateCompat.STATE_PLAYING) {
+            Runnable runnable = () -> update();
+            handler.postDelayed(runnable, 10);
+        }
     }
 
     private String getDuration(long duration) {
@@ -171,7 +132,7 @@ public class PlayerFragment extends Fragment {
 
                     // Finish building the UI
                     buildTransportControls();
-
+                    init();
                     update();
                 }
 
@@ -188,40 +149,59 @@ public class PlayerFragment extends Fragment {
 
     void buildTransportControls() {
         // Grab the view for the play/pause button
-        ImageButton playPause = getActivity().findViewById(R.id.play);
-
-        // Attach a listener to the button
-        playPause.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // Since this is a play/pause button, you'll need to test the current state
-                // and choose the action accordingly
-
-                int pbState = MediaControllerCompat.getMediaController(getActivity()).getPlaybackState().getState();
-                if (pbState == PlaybackStateCompat.STATE_PLAYING) {
-                    MediaControllerCompat.getMediaController(getActivity()).getTransportControls().pause();
-                } else {
-                    MediaControllerCompat.getMediaController(getActivity()).getTransportControls().play();
-                }
-            }
+        ImageButton button = getActivity().findViewById(R.id.play);
+        button.setOnClickListener(v -> {
+            if (mediaController.getPlaybackState().getState() == PlaybackStateCompat.STATE_PLAYING)
+                mediaController.getTransportControls().pause();
+            else
+                mediaController.getTransportControls().play();
         });
+        button = getView().findViewById(R.id.skipBack);
+        button.setOnClickListener(v -> mediaController.getTransportControls().skipToPrevious());
+        button = getView().findViewById(R.id.back);
+        button.setOnClickListener(v -> mediaController.getTransportControls().rewind());
+        button = getView().findViewById(R.id.forward);
+        button.setOnClickListener(v -> mediaController.getTransportControls().fastForward());
+        button = getView().findViewById(R.id.skipForward);
+        button.setOnClickListener(v -> mediaController.getTransportControls().skipToNext());
 
         MediaControllerCompat mediaController = MediaControllerCompat.getMediaController(getActivity());
-
-        // Display the initial state
-        MediaMetadataCompat metadata = mediaController.getMetadata();
-        PlaybackStateCompat pbState = mediaController.getPlaybackState();
 
         // Register a Callback to stay in sync
         mediaController.registerCallback(controllerCallback);
     }
 
+    private void init() {
+        TextView duration = getView().findViewById(R.id.duration);
+        duration.setText(getDuration(mediaController.getMetadata().getLong(MediaMetadataCompat.METADATA_KEY_DURATION)));
+        TextView songName = getView().findViewById(R.id.songName);
+        songName.setText(mediaController.getMetadata().getString(MediaMetadataCompat.METADATA_KEY_TITLE));
+        TextView artistAlbum = getView().findViewById(R.id.artistAlbum);
+        artistAlbum.setText(mediaController.getMetadata().getString(MediaMetadataCompat.METADATA_KEY_ALBUM_ARTIST));
+
+        ImageView imageView = getView().findViewById(R.id.imageView);
+        imageView.setImageBitmap(mediaController.getMetadata().getBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART));
+
+        SeekBar seekBar = getView().findViewById(R.id.seekBar);
+        seekBar.setIndeterminate(false);
+        seekBar.setMax((int) mediaController.getMetadata().getLong(MediaMetadataCompat.METADATA_KEY_DURATION));
+    }
+
     MediaControllerCompat.Callback controllerCallback =
             new MediaControllerCompat.Callback() {
                 @Override
-                public void onMetadataChanged(MediaMetadataCompat metadata) {}
+                public void onMetadataChanged(MediaMetadataCompat metadata) {
+                    init();
+                }
 
                 @Override
-                public void onPlaybackStateChanged(PlaybackStateCompat state) {}
+                public void onPlaybackStateChanged(PlaybackStateCompat state) {
+                    ImageButton imageButton = getView().findViewById(R.id.play);
+                    if (state.getState() == PlaybackStateCompat.STATE_PLAYING){
+                        imageButton.setImageResource(android.R.drawable.ic_media_pause);
+                        update();
+                    } else
+                        imageButton.setImageResource(android.R.drawable.ic_media_play);
+                }
             };
 }
