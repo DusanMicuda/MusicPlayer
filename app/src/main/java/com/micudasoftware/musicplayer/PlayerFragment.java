@@ -168,6 +168,8 @@ public class PlayerFragment extends Fragment {
         button.setOnClickListener(v -> mediaController.getTransportControls().fastForward());
         button = getView().findViewById(R.id.skipForward);
         button.setOnClickListener(v -> mediaController.getTransportControls().skipToNext());
+        button = getView().findViewById(R.id.shuffle);
+        button.setOnClickListener(v -> );
 
         mediaController = MediaControllerCompat.getMediaController(getActivity());
 
@@ -198,6 +200,12 @@ public class PlayerFragment extends Fragment {
                 @Override
                 public void onMetadataChanged(MediaMetadataCompat metadata) {
                     init();
+                }
+
+                @Override
+                public void onShuffleModeChanged(int shuffleMode) {
+                    super.onShuffleModeChanged(shuffleMode);
+                    Toast.makeText(context, "shuffleModeChanged", Toast.LENGTH_SHORT).show();
                 }
 
                 @Override

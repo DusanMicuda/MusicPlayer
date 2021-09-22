@@ -257,6 +257,7 @@ public class LibraryFragment extends Fragment implements CustomAdapter.ItemClick
 
                 ImageButton playAll = getView().findViewById(R.id.play_all);
                 playAll.setOnClickListener(v -> {
+                    controller.getTransportControls().setShuffleMode(PlaybackStateCompat.SHUFFLE_MODE_NONE);
                     playQueue();
                 });
 
