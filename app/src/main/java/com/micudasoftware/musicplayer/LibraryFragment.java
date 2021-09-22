@@ -166,6 +166,13 @@ public class LibraryFragment extends Fragment implements CustomAdapter.ItemClick
             extras.putInt("position", position);
             controller.getTransportControls().
                     sendCustomAction("PlayFromQueue", extras);
+
+            FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
+            fragmentManager.beginTransaction()
+                    .replace(R.id.container,
+                            MainActivity.player)
+                    .commit();
+            BottomNavigationBehavior.setToDefault();
         }
     }
 
@@ -317,6 +324,13 @@ public class LibraryFragment extends Fragment implements CustomAdapter.ItemClick
                 for (MediaBrowserCompat.MediaItem mediaItem : mediaItems)
                     MainActivity.mediaBrowser.subscribe(mediaItem.getMediaId(), subscriptionCallback);
             }
+
+            FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
+            fragmentManager.beginTransaction()
+                    .replace(R.id.container,
+                            MainActivity.player)
+                    .commit();
+            BottomNavigationBehavior.setToDefault();
         }
     }
 }

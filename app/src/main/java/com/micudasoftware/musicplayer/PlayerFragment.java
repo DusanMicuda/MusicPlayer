@@ -24,6 +24,8 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -83,6 +85,8 @@ public class PlayerFragment extends Fragment {
     @Override
     public void onPause() {
         super.onPause();
+        Toast.makeText(context, "onPause", Toast.LENGTH_SHORT).show();
+        mediaController.unregisterCallback(controllerCallback);
         mediaBrowser.disconnect();
         handler.removeCallbacksAndMessages(null);
     }
@@ -165,7 +169,7 @@ public class PlayerFragment extends Fragment {
         button = getView().findViewById(R.id.skipForward);
         button.setOnClickListener(v -> mediaController.getTransportControls().skipToNext());
 
-        MediaControllerCompat mediaController = MediaControllerCompat.getMediaController(getActivity());
+        mediaController = MediaControllerCompat.getMediaController(getActivity());
 
         // Register a Callback to stay in sync
         mediaController.registerCallback(controllerCallback);
