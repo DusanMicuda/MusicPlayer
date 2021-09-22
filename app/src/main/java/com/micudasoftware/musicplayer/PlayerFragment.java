@@ -169,6 +169,8 @@ public class PlayerFragment extends Fragment {
         button.setOnClickListener(v -> mediaController.getTransportControls().skipToNext());
         button = getView().findViewById(R.id.shuffle);
         button.setOnClickListener(v -> mediaController.getTransportControls().setShuffleMode(PlaybackStateCompat.SHUFFLE_MODE_INVALID));
+        button = getView().findViewById(R.id.repeat);
+        button.setOnClickListener(v -> mediaController.getTransportControls().setRepeatMode(0));
 
         mediaController = MediaControllerCompat.getMediaController(getActivity());
 

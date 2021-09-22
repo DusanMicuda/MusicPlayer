@@ -149,6 +149,7 @@ public class PlayerService extends MediaBrowserServiceCompat {
         private ArrayList<MediaDescriptionCompat> queue = new ArrayList<>();
         private int queuePosition;
         private int shuffleMode = 0;
+        private int repeatMode = 0;
         private ArrayList<Integer> shuffleList = new ArrayList<>();
         private MediaDescriptionCompat description;
 
@@ -196,34 +197,7 @@ public class PlayerService extends MediaBrowserServiceCompat {
                     player.prepare();
                     player.start();
                     player.setOnCompletionListener(mp -> {
-                        if (shuffleMode == PlaybackStateCompat.SHUFFLE_MODE_NONE) {
-                            if (queuePosition < queue.size() - 1)
-                                mediaSession.getController().getTransportControls().playFromUri(
-                                        queue.get(queuePosition + 1).getMediaUri(),
-                                        null);
-                            else
-                                onStop();
-                        } else if (shuffleMode == PlaybackStateCompat.SHUFFLE_MODE_ALL) {
-                            shuffleList.add(queuePosition);
-                            if (shuffleList.size() < queue.size()) {
-                                boolean notPlayed;
-                                int rand;
-                                do {
-                                    notPlayed = false;
-                                    rand = new Random().nextInt(queue.size());
-                                    for (int played : shuffleList) {
-                                        if (played == rand) {
-                                            notPlayed = true;
-                                            break;
-                                        }
-                                    }
-                                } while (notPlayed);
-                                Bundle bundle = new Bundle();
-                                bundle.putInt("position", rand);
-                                mediaSession.getController().getTransportControls().sendCustomAction("PlayFromQueue", bundle);
-                            } else
-                                onStop();
-                        }
+                        onSkipToNext();
                     });
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -329,13 +303,26 @@ public class PlayerService extends MediaBrowserServiceCompat {
         @Override
         public void onSkipToNext() {
             if (shuffleMode == PlaybackStateCompat.SHUFFLE_MODE_NONE) {
-                if (queuePosition < queue.size() - 1) {
-                    Bundle extras = new Bundle();
-                    extras.putInt("position", queuePosition + 1);
-                    mediaSession.getController().getTransportControls().sendCustomAction("PlayFromQueue", extras);
-                }
+                if (repeatMode == PlaybackStateCompat.REPEAT_MODE_ONE) {
+                    Bundle bundle = new Bundle();
+                    bundle.putInt("position", queuePosition);
+                    mediaSession.getController().getTransportControls().sendCustomAction("PlayFromQueue", bundle);
+                } else if (queuePosition < queue.size() - 1) {
+                    Bundle bundle = new Bundle();
+                    bundle.putInt("position", queuePosition + 1);
+                    mediaSession.getController().getTransportControls().sendCustomAction("PlayFromQueue", bundle);
+                } else if (repeatMode == PlaybackStateCompat.REPEAT_MODE_ALL) {
+                    Bundle bundle = new Bundle();
+                    bundle.putInt("position", 0);
+                    mediaSession.getController().getTransportControls().sendCustomAction("PlayFromQueue", bundle);
+                } else
+                    onStop();
             } else if (shuffleMode == PlaybackStateCompat.SHUFFLE_MODE_ALL) {
-                if (!shuffleList.contains(queuePosition)) {
+                if (repeatMode == PlaybackStateCompat.REPEAT_MODE_ONE) {
+                    Bundle bundle = new Bundle();
+                    bundle.putInt("position", queuePosition);
+                    mediaSession.getController().getTransportControls().sendCustomAction("PlayFromQueue", bundle);
+                }else if (!shuffleList.contains(queuePosition)) {
                     shuffleList.add(queuePosition);
                     randomSong();
                 } else {
@@ -367,7 +354,11 @@ public class PlayerService extends MediaBrowserServiceCompat {
                 Bundle bundle = new Bundle();
                 bundle.putInt("position", rand);
                 mediaSession.getController().getTransportControls().sendCustomAction("PlayFromQueue", bundle);
-            }
+            } else if (repeatMode == PlaybackStateCompat.REPEAT_MODE_ALL) {
+                shuffleList = new ArrayList<>();
+                randomSong();
+            } else
+                onStop();
         }
 
         @Override
@@ -393,13 +384,25 @@ public class PlayerService extends MediaBrowserServiceCompat {
             if (this.shuffleMode != shuffleMode) {
                 this.shuffleMode = shuffleMode;
                 if (shuffleMode == PlaybackStateCompat.SHUFFLE_MODE_NONE)
-                    Toast.makeText(getApplicationContext(), "ShuffleMode Off", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(), "ShuffleMode: Off", Toast.LENGTH_SHORT).show();
                 else if (shuffleMode == PlaybackStateCompat.SHUFFLE_MODE_ALL)
-                    Toast.makeText(getApplicationContext(), "ShuffleMode On", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(), "ShuffleMode: On", Toast.LENGTH_SHORT).show();
             }
         }
 
-
+        @Override
+        public void onSetRepeatMode(int repeatMode) {
+            if (this.repeatMode == PlaybackStateCompat.REPEAT_MODE_ALL) {
+                this.repeatMode = PlaybackStateCompat.REPEAT_MODE_NONE;
+                Toast.makeText(getApplicationContext(), "RepeatMode: Off", Toast.LENGTH_SHORT).show();
+            } else if (this.repeatMode == PlaybackStateCompat.REPEAT_MODE_NONE) {
+                this.repeatMode = PlaybackStateCompat.REPEAT_MODE_ONE;
+                Toast.makeText(getApplicationContext(), "RepeatMode: One", Toast.LENGTH_SHORT).show();
+            } else if (this.repeatMode == PlaybackStateCompat.REPEAT_MODE_ONE) {
+                this.repeatMode = PlaybackStateCompat.REPEAT_MODE_ALL;
+                Toast.makeText(getApplicationContext(), "RepeatMode: All", Toast.LENGTH_SHORT).show();
+            }
+        }
 
         private void buildNotification() {
             MediaControllerCompat controller = mediaSession.getController();
