@@ -85,7 +85,6 @@ public class PlayerFragment extends Fragment {
     @Override
     public void onPause() {
         super.onPause();
-        Toast.makeText(context, "onPause", Toast.LENGTH_SHORT).show();
         mediaController.unregisterCallback(controllerCallback);
         mediaBrowser.disconnect();
         handler.removeCallbacksAndMessages(null);
@@ -169,7 +168,7 @@ public class PlayerFragment extends Fragment {
         button = getView().findViewById(R.id.skipForward);
         button.setOnClickListener(v -> mediaController.getTransportControls().skipToNext());
         button = getView().findViewById(R.id.shuffle);
-        button.setOnClickListener(v -> );
+        button.setOnClickListener(v -> mediaController.getTransportControls().setShuffleMode(PlaybackStateCompat.SHUFFLE_MODE_INVALID));
 
         mediaController = MediaControllerCompat.getMediaController(getActivity());
 
@@ -200,12 +199,6 @@ public class PlayerFragment extends Fragment {
                 @Override
                 public void onMetadataChanged(MediaMetadataCompat metadata) {
                     init();
-                }
-
-                @Override
-                public void onShuffleModeChanged(int shuffleMode) {
-                    super.onShuffleModeChanged(shuffleMode);
-                    Toast.makeText(context, "shuffleModeChanged", Toast.LENGTH_SHORT).show();
                 }
 
                 @Override

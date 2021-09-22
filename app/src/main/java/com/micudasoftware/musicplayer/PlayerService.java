@@ -67,7 +67,9 @@ public class PlayerService extends MediaBrowserServiceCompat {
                         PlaybackStateCompat.ACTION_SKIP_TO_NEXT |
                         PlaybackStateCompat.ACTION_REWIND |
                         PlaybackStateCompat.ACTION_FAST_FORWARD |
-                        PlaybackStateCompat.ACTION_SEEK_TO);
+                        PlaybackStateCompat.ACTION_SEEK_TO |
+                        PlaybackStateCompat.ACTION_SET_SHUFFLE_MODE |
+                        PlaybackStateCompat.ACTION_SET_REPEAT_MODE);
         mediaSession.setPlaybackState(stateBuilder.build());
 
         mediaSession.setCallback(callback);
@@ -381,6 +383,13 @@ public class PlayerService extends MediaBrowserServiceCompat {
         @Override
         public void onSetShuffleMode(int shuffleMode) {
             shuffleList = new ArrayList<>();
+            if (shuffleMode == PlaybackStateCompat.SHUFFLE_MODE_INVALID) {
+                if (this.shuffleMode == PlaybackStateCompat.SHUFFLE_MODE_NONE)
+                    shuffleMode = PlaybackStateCompat.SHUFFLE_MODE_ALL;
+                else if (this.shuffleMode == PlaybackStateCompat.SHUFFLE_MODE_ALL)
+                    shuffleMode = PlaybackStateCompat.SHUFFLE_MODE_NONE;
+            }
+
             if (this.shuffleMode != shuffleMode) {
                 this.shuffleMode = shuffleMode;
                 if (shuffleMode == PlaybackStateCompat.SHUFFLE_MODE_NONE)
