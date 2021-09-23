@@ -313,17 +313,22 @@ public class LibraryFragment extends Fragment implements CustomAdapter.ItemClick
 
                 MediaBrowserCompat.SubscriptionCallback subscriptionCallback = new MediaBrowserCompat.SubscriptionCallback() {
                     @Override
-                    public void onChildrenLoaded(@NonNull String parentId, @NonNull List<MediaBrowserCompat.MediaItem> children) {
+                    public void onChildrenLoaded(@NonNull String parentId, @NonNull List<MediaBrowserCompat.MediaItem> children, @NonNull Bundle options) {
                         for (MediaBrowserCompat.MediaItem item : children)
                             controller.addQueueItem(item.getDescription());
 
-                        Bundle extras = new Bundle();
-                        extras.putInt("position", 0);
-                        controller.getTransportControls().sendCustomAction("PlayFromQueue", extras);
+                        if (options.getInt("play") == 0) {
+                            Bundle extras = new Bundle();
+                            extras.putInt("position", 0);
+                            controller.getTransportControls().sendCustomAction("PlayFromQueue", extras);
+                        }
                     }
                 };
-                for (MediaBrowserCompat.MediaItem mediaItem : mediaItems)
-                    MainActivity.mediaBrowser.subscribe(mediaItem.getMediaId(), subscriptionCallback);
+                for (int i = 0; i < mediaItems.size(); i++) {
+                    Bundle bundle = new Bundle();
+                    bundle.putInt("play", i);
+                    MainActivity.mediaBrowser.subscribe(mediaItems.get(i).getMediaId(), bundle, subscriptionCallback);
+                }
             }
 
             FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
