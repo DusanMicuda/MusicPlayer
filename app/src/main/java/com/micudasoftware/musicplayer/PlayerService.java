@@ -155,31 +155,22 @@ public class PlayerService extends MediaBrowserServiceCompat {
 
         @Override
         public void onPlay() {
-            registerReceiver(myNoisyAudioStreamReceiver,
-                    new IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY));
-            player.start();
-            stateBuilder.setState(
-                    PlaybackStateCompat.STATE_PLAYING,
-                    player.getCurrentPosition(),
-                    1f);
-            mediaSession.setPlaybackState(stateBuilder.build());
-            buildNotification();
+            if (requestAudioFocus() == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
+                registerReceiver(myNoisyAudioStreamReceiver,
+                        new IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY));
+                player.start();
+                stateBuilder.setState(
+                        PlaybackStateCompat.STATE_PLAYING,
+                        player.getCurrentPosition(),
+                        1f);
+                mediaSession.setPlaybackState(stateBuilder.build());
+                buildNotification();
+            }
         }
 
         @Override
         public void onCustomAction(String action, Bundle extras) {
-            AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-            AudioAttributes attrs = new AudioAttributes.Builder()
-                    .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-                    .build();
-            AudioManager.OnAudioFocusChangeListener afChangeListener = focusChange -> {};
-            audioFocusRequest = new AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
-                    .setOnAudioFocusChangeListener(afChangeListener)
-                    .setAudioAttributes(attrs)
-                    .build();
-            int result = am.requestAudioFocus(audioFocusRequest);
-
-            if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
+            if (requestAudioFocus() == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
                 startService(new Intent(getApplicationContext(), PlayerService.class));
                 mediaSession.setActive(true);
                 registerReceiver(myNoisyAudioStreamReceiver,
@@ -220,6 +211,24 @@ public class PlayerService extends MediaBrowserServiceCompat {
             }
         }
 
+        private int requestAudioFocus() {
+            AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+            AudioAttributes attrs = new AudioAttributes.Builder()
+                    .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                    .build();
+            AudioManager.OnAudioFocusChangeListener afChangeListener = focusChange -> {
+                if (focusChange == AudioManager.AUDIOFOCUS_GAIN)
+                    onPlay();
+                else if (focusChange == AudioManager.AUDIOFOCUS_LOSS)
+                    onPause();
+            };
+            audioFocusRequest = new AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
+                    .setOnAudioFocusChangeListener(afChangeListener)
+                    .setAudioAttributes(attrs)
+                    .build();
+            return am.requestAudioFocus(audioFocusRequest);
+        }
+
         @Override
         public void onAddQueueItem(MediaDescriptionCompat description) {
             queue.add(description);
@@ -236,20 +245,20 @@ public class PlayerService extends MediaBrowserServiceCompat {
             AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
             am.abandonAudioFocusRequest(audioFocusRequest);
 //            unregisterReceiver(myNoisyAudioStreamReceiver);
-//            stopSelf();
             mediaSession.setActive(false);
-            player.stop();
+            player.pause();
             stateBuilder.setState(
                     PlaybackStateCompat.STATE_STOPPED,
                     player.getCurrentPosition(),
                     1f);
             mediaSession.setPlaybackState(stateBuilder.build());
-            buildNotification();
-//            stopForeground(false);
+            stopForeground(false);
         }
 
         @Override
         public void onPause() {
+            AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+            am.abandonAudioFocusRequest(audioFocusRequest);
             player.pause();
             stateBuilder.setState(
                     PlaybackStateCompat.STATE_PAUSED,
