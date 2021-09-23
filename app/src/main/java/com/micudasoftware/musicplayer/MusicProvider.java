@@ -11,7 +11,6 @@ import android.net.Uri;
 import android.provider.MediaStore;
 import android.support.v4.media.MediaBrowserCompat;
 import android.support.v4.media.MediaDescriptionCompat;
-import android.util.Log;
 import android.widget.Toast;
 import java.io.IOException;
 import java.util.LinkedList;
@@ -277,6 +276,7 @@ public class MusicProvider {
                             cursor.getString(cursor.getColumnIndexOrThrow("Directory")) +
                             name)
                     .setTitle(name)
+                    .setSubtitle(cursor.getString(cursor.getColumnIndexOrThrow("Directory")).split("/")[cursor.getString(cursor.getColumnIndexOrThrow("Directory")).split("/").length - 1])
                     .setMediaUri(uri)
                     .setIconUri(getIconUri(MusicDatabase.COLUMN_PATH, "\"%" + name + "%\"", MusicDatabase.COLUMN_PATH));
 
