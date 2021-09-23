@@ -84,10 +84,14 @@ public class PlayerFragment extends Fragment {
         SeekBar seekBar = getView().findViewById(R.id.seekBar);
         seekBar.setProgress((int) mediaController.getPlaybackState().getCurrentPosition(null));
 
+        ImageButton imageButton = getView().findViewById(R.id.play);
         if (mediaController.getPlaybackState().getState() == PlaybackStateCompat.STATE_PLAYING) {
+            imageButton.setImageResource(android.R.drawable.ic_media_pause);
             Runnable runnable = () -> update();
             handler.postDelayed(runnable, 10);
-        }
+        } else
+            imageButton.setImageResource(android.R.drawable.ic_media_play);
+
     }
 
     private String getDuration(long duration) {
@@ -192,12 +196,7 @@ public class PlayerFragment extends Fragment {
 
                 @Override
                 public void onPlaybackStateChanged(PlaybackStateCompat state) {
-                    ImageButton imageButton = getView().findViewById(R.id.play);
-                    if (state.getState() == PlaybackStateCompat.STATE_PLAYING){
-                        imageButton.setImageResource(android.R.drawable.ic_media_pause);
-                        update();
-                    } else
-                        imageButton.setImageResource(android.R.drawable.ic_media_play);
+                    update();
                 }
             };
 }
