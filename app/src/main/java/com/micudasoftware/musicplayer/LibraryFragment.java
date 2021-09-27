@@ -4,13 +4,9 @@ import android.graphics.Bitmap;
 import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.support.v4.media.MediaBrowserCompat;
-import android.support.v4.media.MediaDescriptionCompat;
 import android.support.v4.media.session.MediaControllerCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,7 +14,6 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -84,7 +79,6 @@ public class LibraryFragment extends Fragment implements CustomAdapter.ItemClick
         MainActivity.navigationView.getMenu().findItem(R.id.library).setChecked(true);
         if (mediaItems != null)
             BottomNavigationBehavior.setToDefault();
-
     }
 
     private final MediaBrowserCompat.SubscriptionCallback subscriptionCallback =
@@ -239,19 +233,19 @@ public class LibraryFragment extends Fragment implements CustomAdapter.ItemClick
                     TextView subtitle = getView().findViewById(R.id.header_text);
                     ConstraintLayout.LayoutParams subtitleLayoutParams =
                             (ConstraintLayout.LayoutParams) subtitle.getLayoutParams();
-                    subtitleLayoutParams.bottomToTop = R.id.menu_button;
+                    subtitleLayoutParams.bottomToTop = R.id.menu_buttons;
                     subtitle.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20);
                     subtitle.setSelected(true);
                     subtitle.setText(this.subtitle);
 
                     titleLayoutParams.bottomToTop = R.id.header_text;
                 } else
-                    titleLayoutParams.bottomToTop = R.id.menu_button;
+                    titleLayoutParams.bottomToTop = R.id.menu_buttons;
 
                 backgroundLayout = (ConstraintLayout) getLayoutInflater()
                         .inflate(R.layout.header_media_buttons, backgroundLayout, true);
                 ConstraintLayout.LayoutParams mediaButtonsParams = (ConstraintLayout.LayoutParams)
-                        getView().findViewById(R.id.menu_button).getLayoutParams();
+                        getView().findViewById(R.id.menu_buttons).getLayoutParams();
                 mediaButtonsParams.startToStart = R.id.backgroundLayout;
                 mediaButtonsParams.bottomToBottom = R.id.backgroundLayout;
 
@@ -292,6 +286,12 @@ public class LibraryFragment extends Fragment implements CustomAdapter.ItemClick
 
                 backgroundLayout = (ConstraintLayout) getLayoutInflater()
                         .inflate(R.layout.header_menu_button, backgroundLayout, true);
+
+                ImageButton headerMenu = getView().findViewById(R.id.menu_button);
+                registerForContextMenu(headerMenu);
+                headerMenu.setOnClickListener(v -> {
+                    getActivity().openContextMenu(v);
+                });
             }
 
             AppBarLayout appBarLayout = getView().findViewById(R.id.appBar);

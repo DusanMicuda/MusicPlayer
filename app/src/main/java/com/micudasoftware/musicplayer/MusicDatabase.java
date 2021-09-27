@@ -65,13 +65,18 @@ public class MusicDatabase extends SQLiteOpenHelper {
                         " WHERE tbl_name = '" + TABLE_NAME + "'",
                 null);
 
-        if (cursor.getCount() == 0 &&
-                ContextCompat.checkSelfPermission(context, Manifest.permission.READ_EXTERNAL_STORAGE)
+        if (cursor.getCount() == 0 ) {
+            updateDatabase();
+        }
+        cursor.close();
+    }
+
+    public static void updateDatabase() {
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.READ_EXTERNAL_STORAGE)
                         == PackageManager.PERMISSION_GRANTED) {
             Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
             context.startActivityForResult(intent, 1);
         }
-        cursor.close();
     }
 
     @Override

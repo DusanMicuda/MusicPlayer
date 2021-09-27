@@ -12,7 +12,7 @@
         android:title="Player"/>
 
     <item
-        android:id="@+id/search"
+        android:id="@+id/findSongs"
         android:icon="@drawable/search"
         android:title="Search"/>
 

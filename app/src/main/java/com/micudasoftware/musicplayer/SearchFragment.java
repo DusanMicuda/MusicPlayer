@@ -23,6 +23,6 @@ public class SearchFragment extends Fragment {
     public void onResume() {
         super.onResume();
         BottomNavigationView navigationView = getView().getRootView().findViewById(R.id.navigationView);
-        navigationView.getMenu().findItem(R.id.search).setChecked(true);
+        navigationView.getMenu().findItem(R.id.findSongs).setChecked(true);
     }
 }
