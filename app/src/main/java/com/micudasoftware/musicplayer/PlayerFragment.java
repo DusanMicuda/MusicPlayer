@@ -11,6 +11,7 @@ import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaControllerCompat;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -49,24 +50,6 @@ public class PlayerFragment extends Fragment {
                 null); // optional Bundle
         mediaBrowser.connect();
         getActivity().setVolumeControlStream(AudioManager.STREAM_MUSIC);
-
-        SeekBar seekBar = getView().findViewById(R.id.seekBar);
-        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                if (fromUser) {
-                    mediaController.getTransportControls().seekTo(progress);
-                    seekBar.setProgress(progress);
-                }
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {}
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {}
-        });
-
     }
 
     @Override
@@ -124,10 +107,14 @@ public class PlayerFragment extends Fragment {
                     // Save the controller
                     MediaControllerCompat.setMediaController(getActivity(), mediaController);
 
+
+
                     // Finish building the UI
-                    buildTransportControls();
-                    init();
-                    update();
+                    if (mediaController.getMetadata() != null) {
+                        init();
+                        buildTransportControls();
+                        update();
+                    }
                 }
 
                 @Override
@@ -169,7 +156,7 @@ public class PlayerFragment extends Fragment {
         mediaController.registerCallback(controllerCallback);
     }
 
-    private void init() {
+    private void init() throws NullPointerException {
         TextView duration = getView().findViewById(R.id.duration);
         duration.setText(getDuration(mediaController.getMetadata().getLong(MediaMetadataCompat.METADATA_KEY_DURATION)));
         TextView songName = getView().findViewById(R.id.songName);
@@ -185,6 +172,21 @@ public class PlayerFragment extends Fragment {
         SeekBar seekBar = getView().findViewById(R.id.seekBar);
         seekBar.setIndeterminate(false);
         seekBar.setMax((int) mediaController.getMetadata().getLong(MediaMetadataCompat.METADATA_KEY_DURATION));
+        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                if (fromUser) {
+                    mediaController.getTransportControls().seekTo(progress);
+                    seekBar.setProgress(progress);
+                }
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {}
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {}
+        });
     }
 
     MediaControllerCompat.Callback controllerCallback =
